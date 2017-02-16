@@ -1,19 +1,75 @@
-from django.shortcuts import render
-from django.http import HttpResponse 
-from .models import User
+# from django.shortcuts import render, redirect
+# from django.http import HttpResponse 
+# from .models import Schedule
+# from django.http import Http404
+# from django.contrib.auth import authenticate, login
+
+# from .forms import UserForm
+# from django.views import generic 
 # Create your views here.
 
-def index(request):
-	all_scheds = User.objects.all()
-	context = {'all_scheds': all_scheds}
-	return render(request, 'schedule/index.html', context)
+# def index(request):
+# 	return render(request, 'index.html', {})
 
-def detail (request, sched_id):
-	return HttpResponse ('<h1> schedule for user ID: ' + sched_id + '</h1> ')
+# def detail (request, user_id):
+# 	try:
+# 		user = User.objects.get(pk=user_id)
+# 	except User.DoesNotExist:
+# 		raise Http404("User does not exist you idiot")
+# 	return HttpResponse ('<h1> user: ' + user.username + '</h1> ')
+
+# def intersect (request):
+# 	return HttpResponse ('<h1> Select friends and compute intersection </h1>')
+
+# def data (request):
+# 	users = User.objects.all()
+# 	context = {'users': users}
+# 	return render(request, 'displaydata.html', context)
+
+#def submit (request, date, sched): 
+
+from django.shortcuts import render, redirect
+from django.views.generic.base import TemplateView
+from django.views.generic import View
+from django.contrib.auth import authenticate, login
+from .forms import UserForm
+from django.views import generic 
+
+class InputView(TemplateView):
+	template_name = 'index.html'
+
+class UserFormView(View):
+	form_class = UserForm
+	template_name = 'register_form.html'
+
+	def get(self, request):
+		form = self.form_class(None)
+		context = {'form': form}
+		return render(request, self.template_name, context)
+
+	def post(self, request):
+		form = self.form_class(request.POST)
+
+		if form.is_valid(): 
+			user = form.save(commit=False)
+			username = form.cleaned_data['username']
+			password = form.cleaned_data['password']
+			user.set_password(password)
+			user.save()
+
+			user = authenticate(username = username, password = password)
+
+			if user is not None:
+				if user.is_active:
+					login(request, user)
+					return redirect('schedule:index')
+
+		context = {'form': form}
+
+		return render(request, self.template_name, context)
 
 
-def update(request):
-	return HttpResponse ('<h1> User goes here to view/change their schedule </h1>')
 
-def intersect (request):
-	return HttpResponse ('<h1> Select friends and compute intersection </h1>')
+
+
+

@@ -1,0 +1,176 @@
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.7/angular.js"> </script>  
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<html>
+
+<html>
+	<style type="text/css">
+	div#one {
+		flex: 0 0 150px;
+		background: red;
+	}
+	div#two {
+		background: green;
+		flex: 1 0 auto;
+		padding-top: 10px;
+	}
+	#content {
+		display: flex;
+		flex-direction: row;
+		height: 1000px;
+	}
+	#weekToggle {
+		background-color: blue; 
+		height: 50px;
+		padding-top: 5px 
+	}
+	#daysOfWeek {
+		background-color: orange; 
+		height: 350px; 
+	}
+	body {
+		padding-top: 50px; 
+	}
+
+	.selected {
+		background-color: grey;
+	}
+
+	</style>
+
+	<script type="text/javascript">
+
+console.log("connected"); 
+var app = angular.module('mainApp', []).config(function($interpolateProvider){
+    $interpolateProvider.startSymbol('[[').endSymbol(']]');
+});
+app.controller("mainController", function ($scope) {
+	$scope.numSlots = 48; 	
+	$scope.scheduleStr = '000000000000000000000000000000000000000000000000'; 
+    $scope.weekCount = 0; 
+	$scope.datesToDisplay = 35; 
+	$scope.weeksToDisplay = 4; 
+	$scope.dateArray = []; 
+    $scope.datesThisWeek = []; 
+	$scope.slotsForRepeat = []; 
+	$scope.date = new Date(); 
+	$scope.username = ""; 
+
+
+    for (var i = 0; i < $scope.numSlots; i++) {
+      	$scope.slotsForRepeat.push(i); 
+    }
+    $scope.days = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"]; 
+
+
+    for (var i = 0; i < $scope.datesToDisplay; i++) {
+    	d = new Date();
+    	d.setDate(d.getDate() + i);
+    	$scope.dateArray.push(d);
+    }
+
+    console.log($scope.dateArray); 
+
+    $scope.changeWeek = function (num) {
+    	$scope.weekCount = $scope.weekCount + num; 
+    	if ($scope.weekCount < 0) {
+    		$scope.weekCount = 0; 
+    	}
+    	else if ($scope.weekCount > $scope.weeksToDisplay) {
+    		$scope.weekCount = $scope.weeksToDisplay; 
+    	}
+        $scope.getCurrentWeek(); 
+    }
+
+    function setCharAt(str,index,chr) {
+    	if(index > str.length-1) return str;
+    	return str.substr(0,index) + chr + str.substr(index+1);
+	}
+
+    $scope.getCurrentWeek = function () {
+    	$scope.datesThisWeek = []; 
+    	var index = $scope.weekCount * 7; 
+        for (var i = index; i < index + 7; i++) {
+            $scope.datesThisWeek.push($scope.dateArray[i]); 
+        }
+    }
+
+    $scope.toggleBits = function (slot) {
+    	c = $scope.scheduleStr[slot]
+    	$scope.scheduleStr = setCharAt($scope.scheduleStr, slot, (c == '1') ? '0' : '1');
+    	document.getElementById('slot'+slot.toString()).classList.toggle('selected');
+    }
+
+    $scope.setDate = function (date) {
+    	$scope.date = date; 
+    }
+
+}
+)
+
+	</script>
+
+</head>
+ <body id="bodyload" ng-app = "mainApp" ng-controller="mainController" 
+ > 
+	<nav id="navbar" class = "navbar navbar-default navbar-inverse navbar-fixed-top" role = "navigation">
+
+		<div class = "navbar-header">
+			<button type = "button" class = "navbar-toggle" 
+			data-toggle = "collapse" data-target = "#example-navbar-collapse">
+			<span class = "sr-only">Toggle navigation</span>
+			<span class = "icon-bar"></span>
+			<span class = "icon-bar"></span>
+			<span class = "icon-bar"></span>
+		</button>
+
+		<a class = "navbar-brand" href = "#"> GoodTime </a>
+	</div>
+
+	<div class = "collapse navbar-collapse" id = "example-navbar-collapse">
+		
+		<ul class = "nav navbar-nav">
+			<li><a href = "{% url 'schedule:register' %}"> Login/Register </a></li>
+			<li class = "active"><a href = "{% url 'schedule:index' %}"> Input </a></li>
+			<li><a href = "#"> Sleep Time</a></li>
+			<li><a href = "#"> Classes </a></li>
+			<li><a href = "#"> Plan Event</a></li>
+		</li>
+
+	</ul>
+</div>
+
+</nav>
+<section id="content">
+	<div id="one"> 
+		<div id ="weekToggle">  
+			<button class="btn btn-danger" ng-click="changeWeek(-1)"> Last </button>
+			<button class="btn btn-primary" ng-click="changeWeek(1)"> Next </button> </div> 
+		<div id="daysOfWeek"> 
+				<ul>
+		<li ng-repeat = "date in datesThisWeek" ><a ng-click = "setDate(date)" href="#"> [[days[date.getDay()] + " " + (date.getMonth() + 1) + 
+    "/" +  date.getDate() +
+    "/" +  date.getFullYear()]]</a></li>
+	</ul>
+	<li> [[weekCount]]</li>
+		</div>
+	</div>
+	<div id="two"> 
+		<div class = "container"> 
+				<table class="table table-bordered table-hover table-nonfluid">
+			<tbody>
+				<section ng-repeat="slot in slotsForRepeat">
+					<tr ng-repeat="slot in slotsForRepeat">
+						<td ng-click = "toggleBits(slot)" id="slot[[slot]]" class="slots"> [[slot]] </td>
+					</tr>
+			</tbody>
+		</table>
+		</div>
+	</div>
+</section>
+
+</body>
+</html>
+
+
