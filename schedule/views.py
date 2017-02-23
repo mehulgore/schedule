@@ -34,9 +34,27 @@ from django.views.generic import View
 from django.contrib.auth import authenticate, login
 from .forms import UserForm
 from django.views import generic 
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Schedule
+from .serializers import ScheduleSerializer 
+from django.contrib.auth.models import User
+
 
 class InputView(TemplateView):
 	template_name = 'index.html'
+
+	def get(self, request):
+		username = None
+    	if request.user.is_authenticated():
+        	username = request.user.username
+		context = {'username': username}
+		return render(request, self.template_name, context)
+
+	def post(self, request):
+		return render(request, self.template_name, context)
 
 class UserFormView(View):
 	form_class = UserForm
@@ -64,7 +82,7 @@ class UserFormView(View):
 					login(request, user)
 					return redirect('schedule:index')
 
-		context = {'form': form}
+		context = {'form': form, 'username': username}
 
 		return render(request, self.template_name, context)
 
